@@ -15,5 +15,5 @@ public interface IVariable {
 	 * @return The Binary Fox
 	 */
 	public BigDecimal value();
-	
+
 }

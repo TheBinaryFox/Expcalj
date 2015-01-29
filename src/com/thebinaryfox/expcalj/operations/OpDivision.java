@@ -27,5 +27,5 @@ public class OpDivision implements IOperation {
 	public String toString() {
 		return "/";
 	}
-	
+
 }

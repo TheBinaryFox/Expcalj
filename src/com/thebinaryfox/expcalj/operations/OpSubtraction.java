@@ -22,5 +22,5 @@ public class OpSubtraction implements IOperation {
 	public String toString() {
 		return "-";
 	}
-	
+
 }

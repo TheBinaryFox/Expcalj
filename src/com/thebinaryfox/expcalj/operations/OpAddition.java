@@ -17,7 +17,7 @@ public class OpAddition implements IOperation {
 	public BigDecimal calculate(BigDecimal left, BigDecimal right) {
 		return left.add(right);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "+";

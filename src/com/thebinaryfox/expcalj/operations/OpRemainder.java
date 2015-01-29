@@ -22,5 +22,5 @@ public class OpRemainder implements IOperation {
 	public String toString() {
 		return "%";
 	}
-	
+
 }

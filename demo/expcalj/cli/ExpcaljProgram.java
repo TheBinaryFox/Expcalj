@@ -8,15 +8,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
-
 import com.thebinaryfox.expcalj.Expression;
 import com.thebinaryfox.expcalj.ExpressionEnvironment;
 import com.thebinaryfox.expcalj.ExpressionException;
@@ -949,7 +946,8 @@ public class ExpcaljProgram {
 				StackTraceElement ste = stack[i];
 
 				lines++;
-				System.out.println(color("44;37") + str_force_length_a(" " + ste.getClassName() + "." + ste.getMethodName() + "()", WIDTH - 8) + str_force_length_a(" : " + ste.getLineNumber(), 8) + color("0"));
+				System.out.println(color("44;37") + str_force_length_a(" " + ste.getClassName() + "." + ste.getMethodName() + "()", WIDTH - 8) + str_force_length_a(" : " + ste.getLineNumber(), 8)
+						+ color("0"));
 			}
 		}
 

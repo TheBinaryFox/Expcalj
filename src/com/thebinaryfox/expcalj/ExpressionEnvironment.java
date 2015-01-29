@@ -365,9 +365,10 @@ public class ExpressionEnvironment {
 		else
 			functions.put(name, function);
 	}
-	
+
 	/**
 	 * Copy the environment.
+	 * 
 	 * @return the environment that was copied.
 	 */
 	@SuppressWarnings("unchecked")
@@ -378,7 +379,7 @@ public class ExpressionEnvironment {
 		env.operations = (HashMap<String, IOperation>) operations.clone();
 		env.functions = (HashMap<String, IFunction>) functions.clone();
 		env.variables = (HashMap<String, IVariable>) variables.clone();
-		
+
 		return env;
 	}
 

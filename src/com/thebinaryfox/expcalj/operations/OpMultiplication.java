@@ -17,7 +17,7 @@ public class OpMultiplication implements IOperation {
 	public BigDecimal calculate(BigDecimal left, BigDecimal right) {
 		return left.multiply(right);
 	}
-	
+
 	@Override
 	public String toString() {
 		return "*";

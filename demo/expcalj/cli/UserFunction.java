@@ -129,7 +129,7 @@ public class UserFunction implements IFunction {
 	public String[] getParameters() {
 		return getParametersSrc().clone();
 	}
-	
+
 	protected String[] getParametersSrc() {
 		return parameters;
 	}
@@ -164,29 +164,29 @@ public class UserFunction implements IFunction {
 			env = ExpressionEnvironment.getDefault();
 
 		env = env.copy();
-		
+
 		Iterator<BigDecimal> parami = params.iterator();
 		String[] paramsr = getParametersSrc();
 		for (int i = 0; i < paramsr.length; i++) {
 			env.setVariable(paramsr[i], parami.next());
 		}
-		
+
 		return env;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder str = new StringBuilder(name);
 		str.append("(");
-		
+
 		String[] params = getParametersSrc();
 		for (int i = 0; i < params.length; i++) {
 			if (i != 0)
 				str.append(", ");
-			
+
 			str.append(params[i]);
 		}
-		
+
 		str.append(")");
 		return str.toString();
 	}
