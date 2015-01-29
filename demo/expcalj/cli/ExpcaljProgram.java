@@ -479,28 +479,28 @@ public class ExpcaljProgram {
 		}
 
 		arguments = arguments.toLowerCase();
-		
+
 		// 32 bit
 		if (arguments.equals("32 bit") || arguments.equals("32-bit") || arguments.equals("32bit")) {
 			env.setMathContext(MathContext.DECIMAL32);
 			System.out.println(color("33") + "Changed context to " + color("0") + "32 bit" + color("33") + "." + color("0"));
 			return;
 		}
-		
+
 		// 64 bit
 		if (arguments.equals("64 bit") || arguments.equals("64-bit") || arguments.equals("64bit")) {
 			env.setMathContext(MathContext.DECIMAL64);
 			System.out.println(color("33") + "Changed context to " + color("0") + "64 bit" + color("33") + "." + color("0"));
 			return;
 		}
-		
+
 		// 128 bit
 		if (arguments.equals("128 bit") || arguments.equals("128-bit") || arguments.equals("128bit")) {
 			env.setMathContext(MathContext.DECIMAL128);
 			System.out.println(color("33") + "Changed context to " + color("0") + "128 bit" + color("33") + "." + color("0"));
 			return;
 		}
-		
+
 		// Unlimited
 		if (arguments.equals("unlimited") || arguments.equals("*")) {
 			env.setMathContext(MathContext.UNLIMITED);
@@ -510,7 +510,7 @@ public class ExpcaljProgram {
 
 		// Custom
 		// TODO
-		
+
 		// Unknown
 		throw new ExpcaljException("context: unknown math context.");
 	}
@@ -1145,13 +1145,23 @@ public class ExpcaljProgram {
 
 	static private String bigDecimalTrim(BigDecimal bd) {
 		String str = bd.toPlainString();
-		while (str.endsWith("0"))
-			str = str.substring(0, str.length() - 1);
+		if (str.indexOf('.') != -1)
+			while (str.endsWith("0"))
+				str = str.substring(0, str.length() - 1);
+
+		if (str.endsWith("."))
+			str = str + ".0";
 
 		return str;
 	}
 
-	static private final String[] BDM_Functions = new String[] { "com.thebinaryfox.expcalj.functions.FuncSquareRoot" };
+	// BigDecimalMath Library
+
+	static private final String[] BDM_Functions = new String[] { "com.thebinaryfox.expcalj.functions.FuncSquareRoot", "com.thebinaryfox.expcalj.functions.FuncSine",
+			"com.thebinaryfox.expcalj.functions.FuncCosine", "com.thebinaryfox.expcalj.functions.FuncTangent", "com.thebinaryfox.expcalj.functions.FuncASine",
+			"com.thebinaryfox.expcalj.functions.FuncACosine", "com.thebinaryfox.expcalj.functions.FuncATangent" };
+
+	static private final String[] BDM_Operations = new String[] {};
 
 	static private void implementBigDecimalMath() {
 		// Functions
@@ -1167,7 +1177,22 @@ public class ExpcaljProgram {
 					env.setFunction(name, func);
 				}
 			} catch (Exception ex) {
-				// FAIL
+				System.out.println("Failed to load function:  " + BDM_Functions[i]);
+			}
+		}
+
+		// Operations
+		for (int i = 0; i < BDM_Operations.length; i++) {
+			try {
+				Class<?> clas = Thread.currentThread().getContextClassLoader().loadClass(BDM_Operations[i]);
+				if (IOperation.class.isAssignableFrom(clas)) {
+					IOperation op = (IOperation) clas.newInstance();
+					String operator = op.toString();
+
+					env.setOperation(operator, op);
+				}
+			} catch (Exception ex) {
+				System.out.println("Failed to load operation: " + BDM_Functions[i]);
 			}
 		}
 	}

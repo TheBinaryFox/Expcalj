@@ -10,7 +10,7 @@ import com.thebinaryfox.expcalj.OperationOrder;
  * The exponent/power operation.
  * 
  * This is an extremely basic implementation, and it doesn't support decimals
- * (floor rounding). If necessary, please use the implementation for
+ * (floor rounding). If necessary, please use or create an implementation for
  * BigDecimalMath. (http://arxiv.org/src/0908.3030v2/anc)
  * 
  * This is not included as a default in the ExpressionEnvironment.
