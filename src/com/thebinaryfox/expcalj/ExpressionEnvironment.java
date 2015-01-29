@@ -57,6 +57,8 @@ public class ExpressionEnvironment {
 		setDefaultFunction("floor", new FuncFloor());
 		setDefaultFunction("ceil", new FuncCeil());
 		setDefaultFunction("round", new FuncRound());
+		setDefaultFunction("min", new FuncMinimum());
+		setDefaultFunction("max", new FuncMaximum());
 
 		setDefaultVariable("pi", new VarPi());
 	}
