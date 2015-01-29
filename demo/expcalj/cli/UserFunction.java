@@ -134,7 +134,7 @@ public class UserFunction implements IFunction {
 			return new Expression(getReturnExpression(), useenv).calculate();
 		}
 
-		return new Expression(getExpression(), env).calculate();
+		return new Expression(getExpression(), useenv).calculate();
 	}
 
 	private ExpressionEnvironment getWorkingEnvironment(List<BigDecimal> params, ExpressionEnvironment env) {
