@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import com.thebinaryfox.expcalj.ExpressionEnvironment;
 import com.thebinaryfox.expcalj.ExpressionException;
 import com.thebinaryfox.expcalj.IFunction;
 
@@ -15,7 +16,7 @@ import com.thebinaryfox.expcalj.IFunction;
 public class FuncCeil implements IFunction {
 
 	@Override
-	public BigDecimal run(List<BigDecimal> params) {
+	public BigDecimal run(List<BigDecimal> params, ExpressionEnvironment env) {
 		if (params.size() != 1)
 			throw new ExpressionException("requires exactly one parameter.");
 
@@ -24,7 +25,7 @@ public class FuncCeil implements IFunction {
 
 	@Override
 	public String toString() {
-		return "ceil";
+		return "ceil()";
 	}
 
 }

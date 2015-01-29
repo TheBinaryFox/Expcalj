@@ -15,8 +15,11 @@ public interface IFunction {
 	 * 
 	 * @param params
 	 *            the parameters of the function.
+	 * @param env
+	 *            the environment the function is run in.
+	 * 
 	 * @return the function.
 	 */
-	public BigDecimal run(List<BigDecimal> params);
+	public BigDecimal run(List<BigDecimal> params, ExpressionEnvironment env);
 
 }

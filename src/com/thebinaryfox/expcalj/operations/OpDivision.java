@@ -1,8 +1,8 @@
 package com.thebinaryfox.expcalj.operations;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 
+import com.thebinaryfox.expcalj.ExpressionEnvironment;
 import com.thebinaryfox.expcalj.IOperation;
 import com.thebinaryfox.expcalj.OperationOrder;
 
@@ -15,12 +15,8 @@ import com.thebinaryfox.expcalj.OperationOrder;
 public class OpDivision implements IOperation {
 
 	@Override
-	public BigDecimal calculate(BigDecimal left, BigDecimal right) {
-		try {
-			return left.divide(right);
-		} catch (ArithmeticException ex) {
-			return left.divide(right, MathContext.DECIMAL128);
-		}
+	public BigDecimal calculate(BigDecimal left, BigDecimal right, ExpressionEnvironment env) {
+		return left.divide(right, env.getMathContext());
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package expcalj.cli;
 
 import java.math.BigDecimal;
 
+import com.thebinaryfox.expcalj.ExpressionEnvironment;
 import com.thebinaryfox.expcalj.IOperation;
 import com.thebinaryfox.expcalj.OperationOrder;
 
@@ -17,7 +18,7 @@ public class TestOpGreaterThan implements IOperation {
 	static private final BigDecimal FALSE = new BigDecimal(0);
 
 	@Override
-	public BigDecimal calculate(BigDecimal left, BigDecimal right) {
+	public BigDecimal calculate(BigDecimal left, BigDecimal right, ExpressionEnvironment env) {
 		return (left.compareTo(right) > 0) ? TRUE : FALSE;
 	}
 

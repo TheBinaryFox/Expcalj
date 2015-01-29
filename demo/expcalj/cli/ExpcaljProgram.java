@@ -8,12 +8,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+
 import com.thebinaryfox.expcalj.Expression;
 import com.thebinaryfox.expcalj.ExpressionEnvironment;
 import com.thebinaryfox.expcalj.ExpressionException;
@@ -21,7 +24,6 @@ import com.thebinaryfox.expcalj.IFunction;
 import com.thebinaryfox.expcalj.IOperation;
 import com.thebinaryfox.expcalj.IVariable;
 import com.thebinaryfox.expcalj.OperationOrder;
-import com.thebinaryfox.expcalj.functions.FuncRandom;
 import com.thebinaryfox.expcalj.operations.OpExponent;
 import com.thebinaryfox.expcalj.variables.VarStatic;
 
@@ -79,7 +81,7 @@ public class ExpcaljProgram {
 
 		env.setVariable("ans", ans);
 
-		env.setFunction("random", new FuncRandom());
+		implementBigDecimalMath();
 
 		// PS1
 		ilstring = "Calc";
@@ -195,6 +197,10 @@ public class ExpcaljProgram {
 			commandStat(arguments);
 			break;
 
+		case "context":
+			commandContext(arguments);
+			break;
+
 		case "save":
 			save(arguments);
 			break;
@@ -271,7 +277,7 @@ public class ExpcaljProgram {
 		// Format
 		switch (format) {
 		case "separated":
-			String ps = ex.getValue().toPlainString();
+			String ps = bigDecimalTrim(ex.getValue());
 			String dp = null;
 
 			int decidx = ps.indexOf('.');
@@ -312,7 +318,7 @@ public class ExpcaljProgram {
 
 		case "plain":
 		default:
-			System.out.println(color("32") + ex.getValue().toPlainString() + color("0"));
+			System.out.println(color("32") + bigDecimalTrim(ex.getValue()) + color("0"));
 			break;
 		}
 	}
@@ -446,6 +452,7 @@ public class ExpcaljProgram {
 		switch (page) {
 		case 1:
 			System.out.println(color("43;30") + ":about    " + color("0;33") + " - Info about Expcalj." + color("0"));
+			System.out.println(color("43;30") + ":format   " + color("0;33") + " - Change the format of the output number." + color("0"));
 			System.out.println(color("43;30") + ":help     " + color("0;33") + " - Expcalj calculator command reference." + color("0"));
 			System.out.println(color("43;30") + ":quit     " + color("0;33") + " - Exit the Expcalj calculator." + color("0"));
 			break;
@@ -456,6 +463,7 @@ public class ExpcaljProgram {
 			System.out.println(color("43;30") + ":env      " + color("0;33") + " - List the variables and functions defined." + color("0"));
 			break;
 		case 3:
+			System.out.println(color("43;30") + ":context  " + color("0;33") + " - Change the MathContext in the environment." + color("0"));
 			System.out.println(color("43;30") + ":load     " + color("0;33") + " - Load an Expcalj CLI state file." + color("0"));
 			System.out.println(color("43;30") + ":save     " + color("0;33") + " - Save an Expcalj CLI state file." + color("0"));
 			break;
@@ -464,6 +472,48 @@ public class ExpcaljProgram {
 			System.out.println(color("43;30") + ":trace    " + color("0;33") + " - Get the stack trace of the last error." + color("0"));
 			break;
 		}
+	}
+
+	static private void commandContext(String arguments) {
+		if (arguments.isEmpty()) {
+			throw new ExpcaljException("context: requires a context.");
+		}
+
+		arguments = arguments.toLowerCase();
+		
+		// 32 bit
+		if (arguments.equals("32 bit") || arguments.equals("32-bit") || arguments.equals("32bit")) {
+			env.setMathContext(MathContext.DECIMAL32);
+			System.out.println(color("33") + "Changed context to " + color("0") + "32 bit" + color("33") + "." + color("0"));
+			return;
+		}
+		
+		// 64 bit
+		if (arguments.equals("64 bit") || arguments.equals("64-bit") || arguments.equals("64bit")) {
+			env.setMathContext(MathContext.DECIMAL64);
+			System.out.println(color("33") + "Changed context to " + color("0") + "64 bit" + color("33") + "." + color("0"));
+			return;
+		}
+		
+		// 128 bit
+		if (arguments.equals("128 bit") || arguments.equals("128-bit") || arguments.equals("128bit")) {
+			env.setMathContext(MathContext.DECIMAL128);
+			System.out.println(color("33") + "Changed context to " + color("0") + "128 bit" + color("33") + "." + color("0"));
+			return;
+		}
+		
+		// Unlimited
+		if (arguments.equals("unlimited") || arguments.equals("*")) {
+			env.setMathContext(MathContext.UNLIMITED);
+			System.out.println(color("33") + "Changed context to " + color("0") + "unlimited" + color("33") + "." + color("0"));
+			return;
+		}
+
+		// Custom
+		// TODO
+		
+		// Unknown
+		throw new ExpcaljException("context: unknown math context.");
 	}
 
 	static private void commandAbout(String arguments) {
@@ -838,7 +888,6 @@ public class ExpcaljProgram {
 
 		// Create
 		UserFunction func = new UserFunction(name, params.toArray(new String[0]), value, condition, returnexp);
-		func.setEnvironment(env);
 
 		env.setFunction(name, func);
 		local_funcs.put(name, func);
@@ -1092,6 +1141,35 @@ public class ExpcaljProgram {
 			System.out.println(color("1;33") + "Loaded." + color("0"));
 		} catch (IOException ex) {
 			throw new RuntimeException("Failed to load!", ex);
+		}
+	}
+
+	static private String bigDecimalTrim(BigDecimal bd) {
+		String str = bd.toPlainString();
+		while (str.endsWith("0"))
+			str = str.substring(0, str.length() - 1);
+
+		return str;
+	}
+
+	static private final String[] BDM_Functions = new String[] { "com.thebinaryfox.expcalj.functions.FuncSquareRoot" };
+
+	static private void implementBigDecimalMath() {
+		// Functions
+		for (int i = 0; i < BDM_Functions.length; i++) {
+			try {
+				Class<?> clas = Thread.currentThread().getContextClassLoader().loadClass(BDM_Functions[i]);
+				if (IFunction.class.isAssignableFrom(clas)) {
+					IFunction func = (IFunction) clas.newInstance();
+					String name = func.toString();
+					if (name.endsWith("()"))
+						name = name.substring(0, name.length() - 2);
+
+					env.setFunction(name, func);
+				}
+			} catch (Exception ex) {
+				// FAIL
+			}
 		}
 	}
 

@@ -16,8 +16,11 @@ public interface IOperation {
 	 *            the left-hand variable.
 	 * @param right
 	 *            the right-hand variable.
+	 * @param env
+	 *            the environment the function is run in.
+	 * 
 	 * @return the calculated result.
 	 */
-	public BigDecimal calculate(BigDecimal left, BigDecimal right);
+	public BigDecimal calculate(BigDecimal left, BigDecimal right, ExpressionEnvironment env);
 
 }

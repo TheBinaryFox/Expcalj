@@ -25,7 +25,7 @@ public class Expression {
 		}
 
 		@Override
-		public BigDecimal calculate(BigDecimal left, BigDecimal right) {
+		public BigDecimal calculate(BigDecimal left, BigDecimal right, ExpressionEnvironment env) {
 			return right == null ? left : right;
 		}
 
@@ -133,7 +133,7 @@ public class Expression {
 		first = parseExpression();
 
 		// Evaluate steps and set the eval_value.
-		eval_value = evaluateSteps(first);
+		eval_value = evaluateSteps(first, getEnvironment());
 	}
 
 	/**
@@ -141,9 +141,12 @@ public class Expression {
 	 * 
 	 * @param first
 	 *            the expected first step in the chain.
+	 * @param env
+	 *            the expression environment.
+	 *            
 	 * @return the evaluated chain.
 	 */
-	protected BigDecimal evaluateSteps(ExpressionStep first) {
+	protected BigDecimal evaluateSteps(ExpressionStep first, ExpressionEnvironment env) {
 		int order = first.getOrder();
 
 		// Determine highest order.
@@ -173,7 +176,7 @@ public class Expression {
 			while (true) {
 				o = here.getOrder();
 				if (o == order) {
-					result = evaluateStep(here);
+					result = evaluateStep(here, env);
 				}
 
 				if (!here.hasNext())
@@ -194,9 +197,11 @@ public class Expression {
 	 * 
 	 * @param step
 	 *            the step to evaluate.
+	 * @param env
+	 *            the expression environment.
 	 */
-	protected BigDecimal evaluateStep(ExpressionStep step) {
-		BigDecimal val = step.getOperation().calculate(step.getLeft(), step.getRight());
+	protected BigDecimal evaluateStep(ExpressionStep step, ExpressionEnvironment env) {
+		BigDecimal val = step.getOperation().calculate(step.getLeft(), step.getRight(), env);
 
 		boolean changes = false;
 		if (step.hasPrevious()) {
@@ -554,7 +559,7 @@ public class Expression {
 
 		// Do function.
 		try {
-			return function.run(params);
+			return function.run(params, env);
 		} catch (ExpressionException ex) {
 			throw new ExpressionException(functionname + ": " + ex.getMessage(), ex);
 		} catch (Exception ex) {

@@ -18,8 +18,6 @@ public class UserFunction implements IFunction {
 
 	static private BigDecimal TRUE = new BigDecimal(1);
 
-	private ExpressionEnvironment env = null;
-
 	private String name = null;
 	private String condition = null;
 	private String expression = null;
@@ -63,25 +61,6 @@ public class UserFunction implements IFunction {
 		this.expression = expression;
 		this.parameters = parameters;
 		this.name = name;
-	}
-
-	/**
-	 * Set the expression environment of this function.
-	 * 
-	 * @param env
-	 *            the environment.
-	 */
-	public void setEnvironment(ExpressionEnvironment env) {
-		this.env = env;
-	}
-
-	/**
-	 * Get the expression environment of this function.
-	 * 
-	 * @return the environment.
-	 */
-	public ExpressionEnvironment getEnvironment() {
-		return env;
 	}
 
 	/**
@@ -135,31 +114,30 @@ public class UserFunction implements IFunction {
 	}
 
 	@Override
-	public BigDecimal run(List<BigDecimal> params) {
+	public BigDecimal run(List<BigDecimal> params, ExpressionEnvironment env) {
 		if (params.size() != parameters.length)
 			throw new ExpressionException(getName() + ": requires exactly " + parameters.length + " parameters!");
 
 		// Get environment.
-		ExpressionEnvironment env = getWorkingEnvironment(params);
+		ExpressionEnvironment useenv = getWorkingEnvironment(params, env);
 
 		// Condition?
 		String condition = getConditional();
 		if (condition != null) {
-			Expression exp = new Expression(condition, env);
+			Expression exp = new Expression(condition, useenv);
 
 			if (exp.calculate().compareTo(TRUE) != 0) {
-				exp = new Expression(getExpression(), env);
+				exp = new Expression(getExpression(), useenv);
 				return exp.calculate();
 			}
 
-			return new Expression(getReturnExpression(), env).calculate();
+			return new Expression(getReturnExpression(), useenv).calculate();
 		}
 
 		return new Expression(getExpression(), env).calculate();
 	}
 
-	private ExpressionEnvironment getWorkingEnvironment(List<BigDecimal> params) {
-		ExpressionEnvironment env = getEnvironment();
+	private ExpressionEnvironment getWorkingEnvironment(List<BigDecimal> params, ExpressionEnvironment env) {
 		if (env == null)
 			env = ExpressionEnvironment.getDefault();
 

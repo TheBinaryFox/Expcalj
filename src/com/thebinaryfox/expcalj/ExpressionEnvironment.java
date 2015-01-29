@@ -1,6 +1,7 @@
 package com.thebinaryfox.expcalj;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
@@ -39,6 +40,7 @@ public class ExpressionEnvironment {
 	static private HashMap<String, IOperation> default_operations;
 	static private HashMap<String, IVariable> default_variables;
 	static private HashMap<String, IFunction> default_functions;
+	static private MathContext default_context = MathContext.DECIMAL128;
 	static {
 		default_operations = new HashMap<String, IOperation>();
 		default_variables = new HashMap<String, IVariable>();
@@ -104,10 +106,24 @@ public class ExpressionEnvironment {
 			default_functions.put(name, function);
 	}
 
+	/**
+	 * Set the default math context.
+	 * 
+	 * @param context
+	 *            the math context.
+	 */
+	static public void setDefaultMathContext(MathContext context) {
+		if (context == null)
+			context = MathContext.DECIMAL128;
+
+		default_context = context;
+	}
+
 	// Calculator
 	private HashMap<String, IOperation> operations;
 	private HashMap<String, IVariable> variables;
 	private HashMap<String, IFunction> functions;
+	private MathContext context;
 
 	private boolean opt_mulv = false;
 	private boolean opt_mulb = false;
@@ -119,6 +135,7 @@ public class ExpressionEnvironment {
 		operations = new HashMap<String, IOperation>();
 		variables = new HashMap<String, IVariable>();
 		functions = new HashMap<String, IFunction>();
+		context = MathContext.UNLIMITED;
 	}
 
 	/**
@@ -128,6 +145,7 @@ public class ExpressionEnvironment {
 		operations.putAll(default_operations);
 		variables.putAll(default_variables);
 		functions.putAll(default_functions);
+		context = default_context;
 	}
 
 	/**
@@ -364,6 +382,28 @@ public class ExpressionEnvironment {
 			functions.remove(name);
 		else
 			functions.put(name, function);
+	}
+
+	/**
+	 * Get the math context used in operations.
+	 * 
+	 * @return the math context.
+	 */
+	public MathContext getMathContext() {
+		return context;
+	}
+
+	/**
+	 * Set the math context used in operations.
+	 * 
+	 * @param context
+	 *            the math context.
+	 */
+	public void setMathContext(MathContext context) {
+		if (context == null)
+			throw new IllegalArgumentException("The math context cannot be null!");
+
+		this.context = context;
 	}
 
 	/**
