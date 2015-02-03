@@ -418,6 +418,7 @@ public class ExpressionEnvironment {
 		ExpressionEnvironment env = new ExpressionEnvironment();
 		env.opt_mulb = opt_mulb;
 		env.opt_mulv = opt_mulv;
+		env.context = context;
 		env.operations = (HashMap<String, IOperation>) operations.clone();
 		env.functions = (HashMap<String, IFunction>) functions.clone();
 		env.variables = (HashMap<String, IVariable>) variables.clone();
