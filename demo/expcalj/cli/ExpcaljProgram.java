@@ -54,13 +54,6 @@ public class ExpcaljProgram {
 	}
 
 	static public void main(String[] args) {
-		// Args
-		ansi = false;
-		for (int i = 0; i < args.length; i++) {
-			if (args[i].equalsIgnoreCase("--color")) {
-				ansi = true;
-			}
-		}
 
 		// Create the environment.
 		env = new ExpressionEnvironment();
@@ -85,11 +78,92 @@ public class ExpcaljProgram {
 		// PS1
 		ilstring = "Calc";
 
+		// Args
+		ansi = false;
+		format = "plain";
+
+		boolean eoflag = false;
+		String flag = null;
+		StringBuilder evalstr = new StringBuilder();
+		try {
+			for (int i = 0; i < args.length; i++) {
+				if (eoflag) {
+					if (evalstr.length() == 0)
+						evalstr.append(args[i]);
+					else {
+						evalstr.append(' ');
+						evalstr.append(args[i]);
+					}
+					continue;
+				}
+
+				if (flag == null)
+					if (args[i].startsWith("-")) {
+						switch (args[i].toLowerCase()) {
+						case "-ctx":
+						case "-context":
+							flag = "-context";
+							break;
+						case "-format":
+							flag = "-format";
+							break;
+						case "-load":
+							flag = "-load";
+							break;
+						case "--color":
+							ansi = true;
+							break;
+						case "--":
+							eoflag = true;
+							break;
+						default:
+							System.err.println("Unknown flag: " + args[i]);
+							return;
+						}
+					} else {
+						evalstr.append(args[i]);
+						eoflag = true;
+						continue;
+					}
+				else {
+					switch (flag) {
+					case "-load":
+						load(args[i], true);
+						break;
+					case "-context":
+						commandContext(args[i], true);
+						break;
+					case "-format":
+						commandFormat(args[i], true);
+						break;
+					}
+
+					flag = null;
+				}
+			}
+		} catch (Exception ex) {
+			System.err.println("Error in args: " + ex.getMessage());
+			return;
+		}
+
+		// Just eval?
+		if (evalstr.length() > 0) {
+			try {
+				Expression ex = new Expression(evalstr.toString(), env);
+				ex.evaluate();
+
+				printValue(ex.getValue());
+			} catch (ExpressionException ex) {
+				System.err.println(color("31") + ex.getMessage() + color("0"));
+			} catch (Exception ex) {
+				System.err.println(color("1;31") + ex.getClass().getSimpleName() + ": " + color("0;31") + ex.getMessage() + color("0"));
+			}
+			return;
+		}
+
 		// Run
 		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 		String line = null;
-
-		format = "plain";
 
 		running = true;
 		while (running) {
@@ -197,7 +271,7 @@ public class ExpcaljProgram {
 			break;
 
 		case "context":
-			commandContext(arguments);
+			commandContext(arguments, false);
 			break;
 
 		case "save":
@@ -205,7 +279,7 @@ public class ExpcaljProgram {
 			break;
 
 		case "load":
-			load(arguments);
+			load(arguments, false);
 			break;
 
 		case "ps1":
@@ -213,14 +287,15 @@ public class ExpcaljProgram {
 			break;
 
 		case "format":
-			format = arguments.toLowerCase();
-			if (!(format.equals("plain") || format.equals("scientific") || format.equals("separated")))
-				throw new ExpcaljException("format: unknown number formatting type.");
-
+			commandFormat(arguments, false);
 			break;
 
 		case "benchmark":
 			commandBenchmark(arguments);
+			break;
+
+		case "loop":
+			commandLoop(arguments);
 			break;
 
 		case "=":
@@ -274,9 +349,13 @@ public class ExpcaljProgram {
 		ans.set(ex.getValue());
 
 		// Format
+		printValue(ex.getValue());
+	}
+
+	static private void printValue(BigDecimal value) {
 		switch (format) {
 		case "separated":
-			String ps = bigDecimalTrim(ex.getValue());
+			String ps = bigDecimalTrim(value);
 			String dp = null;
 
 			int decidx = ps.indexOf('.');
@@ -312,12 +391,12 @@ public class ExpcaljProgram {
 			break;
 
 		case "scientific":
-			System.out.println(color("32") + ex.getValue().toEngineeringString() + color("0"));
+			System.out.println(color("32") + value.toEngineeringString() + color("0"));
 			break;
 
 		case "plain":
 		default:
-			System.out.println(color("32") + bigDecimalTrim(ex.getValue()) + color("0"));
+			System.out.println(color("32") + bigDecimalTrim(value) + color("0"));
 			break;
 		}
 	}
@@ -325,6 +404,57 @@ public class ExpcaljProgram {
 	//
 	//
 	//
+
+	static private void commandLoop(String arguments) {
+		int index = arguments.indexOf("--");
+		if (index == -1) {
+			throw new ExpcaljException("loop: missing loop params or expression.");
+		}
+
+		String[] loopparams = arguments.substring(0, index).trim().split(":");
+		String loopexp = arguments.substring(index + 2).trim();
+
+		if (loopparams.length < 3 || loopparams.length > 4)
+			throw new ExpcaljException("loop: params = \"variable:min:max(:step)\"");
+
+		String var = loopparams[0].trim();
+		BigDecimal min = null;
+		BigDecimal max = null;
+		BigDecimal step = new BigDecimal(1);
+
+		try {
+			min = new BigDecimal(loopparams[1].trim());
+			max = new BigDecimal(loopparams[2].trim());
+
+			if (loopparams.length > 3)
+				step = new BigDecimal(loopparams[3]);
+		} catch (NumberFormatException ex) {
+			throw new ExpcaljException("loop: number format error; params = \"variable:min:max(:step)\"");
+		}
+
+		if (min.compareTo(max) > 0)
+			throw new ExpcaljException("loop: minimum may not be larger than maximum.");
+
+		if (step.compareTo(new BigDecimal(0)) <= 0)
+			throw new ExpcaljException("loop: step may not be less than or equal to zero.");
+
+		ExpressionEnvironment envev = env.copy();
+		Expression exp = new Expression(loopexp, envev);
+		while (min.compareTo(max) <= 0) {
+			System.out.print(str_min_length_a(min.toPlainString() + ": ", 12));
+
+			try {
+				envev.setVariable(var, min);
+				exp.evaluate();
+				System.out.println(color("32") + exp.getValue().toPlainString() + color("0"));
+			} catch (Exception ex) {
+				System.out.println(color("31") + ex.getMessage() + color("0"));
+				lasterror = ex;
+			}
+
+			min = min.add(step);
+		}
+	}
 
 	static private void commandStat(String arguments) {
 		if (arguments.isEmpty()) {
@@ -473,7 +603,17 @@ public class ExpcaljProgram {
 		}
 	}
 
-	static private void commandContext(String arguments) {
+	static private void commandFormat(String arguments, boolean quiet) {
+		arguments = arguments.toLowerCase();
+		if (!(arguments.equals("plain") || arguments.equals("scientific") || arguments.equals("separated")))
+			throw new ExpcaljException("format: unknown number formatting type.");
+
+		format = arguments;
+		if (!quiet)
+			System.out.println(color("33") + "Changed format to " + color("0") + format + color("33") + "." + color("0"));
+	}
+
+	static private void commandContext(String arguments, boolean quiet) {
 		if (arguments.isEmpty()) {
 			throw new ExpcaljException("context: requires a context.");
 		}
@@ -483,28 +623,32 @@ public class ExpcaljProgram {
 		// 32 bit
 		if (arguments.equals("32 bit") || arguments.equals("32-bit") || arguments.equals("32bit")) {
 			env.setMathContext(MathContext.DECIMAL32);
-			System.out.println(color("33") + "Changed context to " + color("0") + "32 bit" + color("33") + "." + color("0"));
+			if (!quiet)
+				System.out.println(color("33") + "Changed context to " + color("0") + "32 bit" + color("33") + "." + color("0"));
 			return;
 		}
 
 		// 64 bit
 		if (arguments.equals("64 bit") || arguments.equals("64-bit") || arguments.equals("64bit")) {
 			env.setMathContext(MathContext.DECIMAL64);
-			System.out.println(color("33") + "Changed context to " + color("0") + "64 bit" + color("33") + "." + color("0"));
+			if (!quiet)
+				System.out.println(color("33") + "Changed context to " + color("0") + "64 bit" + color("33") + "." + color("0"));
 			return;
 		}
 
 		// 128 bit
 		if (arguments.equals("128 bit") || arguments.equals("128-bit") || arguments.equals("128bit")) {
 			env.setMathContext(MathContext.DECIMAL128);
-			System.out.println(color("33") + "Changed context to " + color("0") + "128 bit" + color("33") + "." + color("0"));
+			if (!quiet)
+				System.out.println(color("33") + "Changed context to " + color("0") + "128 bit" + color("33") + "." + color("0"));
 			return;
 		}
 
 		// Unlimited
 		if (arguments.equals("unlimited") || arguments.equals("*")) {
 			env.setMathContext(MathContext.UNLIMITED);
-			System.out.println(color("33") + "Changed context to " + color("0") + "unlimited" + color("33") + "." + color("0"));
+			if (!quiet)
+				System.out.println(color("33") + "Changed context to " + color("0") + "unlimited" + color("33") + "." + color("0"));
 			return;
 		}
 
@@ -934,6 +1078,15 @@ public class ExpcaljProgram {
 		}
 	}
 
+	static private String str_min_length_a(String str, int len) {
+		StringBuilder sb = new StringBuilder(str);
+		while (sb.length() < len) {
+			sb.append(" ");
+		}
+
+		return sb.toString();
+	}
+
 	static private String str_force_length_a(String str, int len) {
 		if (str.length() > len) {
 			return str.substring(0, len - 3) + "...";
@@ -1084,7 +1237,7 @@ public class ExpcaljProgram {
 		}
 	}
 
-	static private void load(String name) {
+	static private void load(String name, boolean quiet) {
 		if (name.isEmpty()) {
 			if (new File("default.ecj").exists())
 				name = "default.ecj";
@@ -1123,8 +1276,11 @@ public class ExpcaljProgram {
 				try {
 					// Command
 					if (line.startsWith(":")) {
-						drawInputLine();
-						System.out.println(line);
+						if (!quiet) {
+							drawInputLine();
+							System.out.println(line);
+						}
+
 						handle(line);
 						continue;
 					}
@@ -1132,12 +1288,14 @@ public class ExpcaljProgram {
 					// Define
 					commandDefine(line, true);
 				} catch (Exception ex) {
-					System.out.println(color("1;31") + "Error on line " + linenum + ": " + color("0;31") + ex.getMessage() + color("0"));
+					if (!quiet)
+						System.out.println(color("1;31") + "Error on line " + linenum + ": " + color("0;31") + ex.getMessage() + color("0"));
 				}
 			}
 
 			br.close();
-			System.out.println(color("1;33") + "Loaded." + color("0"));
+			if (!quiet)
+				System.out.println(color("1;33") + "Loaded." + color("0"));
 		} catch (IOException ex) {
 			throw new RuntimeException("Failed to load!", ex);
 		}
