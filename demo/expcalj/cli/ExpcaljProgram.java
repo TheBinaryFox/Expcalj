@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Arrays;
@@ -45,6 +44,8 @@ public class ExpcaljProgram {
 	static private boolean running;
 	static private boolean ansi;
 	static private boolean nnl;
+	
+	static private STDINReader reader;
 
 	static private String color(String code) {
 		if (ansi)
@@ -113,6 +114,10 @@ public class ExpcaljProgram {
 						case "--color":
 							ansi = true;
 							break;
+						case "--plain":
+						case "--nocolor":
+							ansi = false;
+							break;
 						case "--":
 							eoflag = true;
 							break;
@@ -162,7 +167,17 @@ public class ExpcaljProgram {
 		}
 
 		// Run
-		BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+		reader = STDINReader.get();
+		reader.setInterruptHandler(new Runnable() {
+
+			@Override
+			public void run() {
+				reader.close();
+				System.out.print("\033[31m[Exit]\033[0m\n\n");
+				System.exit(0);
+			}
+			
+		});
 		String line = null;
 
 		running = true;
@@ -175,7 +190,7 @@ public class ExpcaljProgram {
 			} catch (Exception ex) {
 				if (bsodmode)
 					bsod(ex);
-
+				
 				drawErrorLine(ex);
 				if (!(ex instanceof ExpcaljException))
 					lasterror = ex;
@@ -316,6 +331,7 @@ public class ExpcaljProgram {
 
 		case "q":
 		case "quit":
+			reader.close();
 			if (!arguments.isEmpty()) {
 				throw new ExpcaljException("quit: requires no arguments.");
 			}
