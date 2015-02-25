@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 import com.thebinaryfox.expcalj.Expression;
 import com.thebinaryfox.expcalj.ExpressionEnvironment;
@@ -357,6 +358,11 @@ public class ExpcaljProgram {
 			handleCommand(line.substring(1));
 			return;
 		}
+		
+		if (Pattern.matches(".*(?<=[0-9A-Za-z ])=(?=[0-9A-Za-z ]).*", line)) {
+			handleCommand("define " + line);
+			return;
+		}
 
 		// Expression
 		Expression ex = new Expression(line, env);
@@ -606,6 +612,7 @@ public class ExpcaljProgram {
 			System.out.println(color("43;30") + ":define   " + color("0;33") + " - Define a variable or function." + color("0"));
 			System.out.println(color("43;30") + ":stat     " + color("0;33") + " - View statistics about a variable, function, or operator." + color("0"));
 			System.out.println(color("43;30") + ":env      " + color("0;33") + " - List the variables and functions defined." + color("0"));
+			System.out.println(color("43;30") + ":loop     " + color("0;33") + " - Evaluate a loop in the format of 'var:min:max(:step) -- expr'." + color("0"));
 			break;
 		case 3:
 			System.out.println(color("43;30") + ":context  " + color("0;33") + " - Change the MathContext in the environment." + color("0"));
