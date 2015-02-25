@@ -1,0 +1,4 @@
+/build/tmp-bin/
+/build/tmp-log/
+/build/*.jar
+/build/*.log
