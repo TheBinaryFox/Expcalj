@@ -60,7 +60,7 @@ fi
 mkdir tmp-bin
 mkdir tmp-log
 printf "\033[33mCompiling...\033[0m\n"
-compile "../src" "../demo" "../lib/BigDecimalMath"
+compile "../src" "../src-bigdecimalmath" "../demo"
 
 #
 # Write META-INF.
