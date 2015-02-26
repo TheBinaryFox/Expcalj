@@ -228,6 +228,9 @@ public class ExpressionEnvironment {
 	 *            the value of the variable.
 	 */
 	public void setVariable(String name, IVariable value) {
+		if (name != null)
+			name = name.trim();
+
 		validateVariable(name);
 
 		// Set
@@ -246,7 +249,6 @@ public class ExpressionEnvironment {
 	 *            the value of the variable.
 	 */
 	public void setVariable(String name, BigDecimal value) {
-		// TODO disallow certain characters
 		setVariable(name, new VarStatic(value));
 	}
 
@@ -290,6 +292,9 @@ public class ExpressionEnvironment {
 	 *            the operation.
 	 */
 	public void setOperation(String operator, IOperation operation) {
+		if (operator != null)
+			operator = operator.trim();
+
 		validateOperator(operator);
 
 		// Set
@@ -339,6 +344,9 @@ public class ExpressionEnvironment {
 	 *            the function object.
 	 */
 	public void setFunction(String name, IFunction function) {
+		if (name != null)
+			name = name.trim();
+
 		validateFunction(name);
 
 		// Set
@@ -406,20 +414,34 @@ public class ExpressionEnvironment {
 	 *            the name of the variable.
 	 */
 	protected void validateVariable(String name) {
+		// Validate
 		if (name == null)
 			throw new IllegalArgumentException("The variable name cannot be null!");
 
-		name = name.trim();
 		if (name.isEmpty())
 			throw new IllegalArgumentException("The variable name cannot be empty!");
 
 		// Validate not starting with number or special character.
 		char f = name.charAt(0);
 		if ((f >= '0' && f <= '9') || f == '.')
-			throw new IllegalArgumentException("The variable name may not start with a numeric character!");
+			throw new IllegalArgumentException("The variable name cannot start with a numeric character!");
 
-		if (name.contains("(") || name.contains(")"))
-			throw new IllegalArgumentException("The variable name may not contain \"(\" or \")\"");
+		if (name.indexOf('(') != -1 || name.indexOf(')') != -1)
+			throw new IllegalArgumentException("The variable name cannot contain \"(\" or \")\"");
+
+		// Look through characters.
+		char[] chrs = name.toCharArray();
+		for (int i = 0; i < chrs.length; i++) {
+			char c = chrs[i];
+
+			if ((c >= '0' && c <= '9') || c == '.' || c == '_')
+				continue;
+
+			if (Character.isAlphabetic(c))
+				continue;
+
+			throw new IllegalArgumentException("The variable name must be alphanumeric!");
+		}
 	}
 
 	/**
@@ -429,21 +451,28 @@ public class ExpressionEnvironment {
 	 *            the operator.
 	 */
 	protected void validateOperator(String operator) {
+		// Validate
 		if (operator == null)
 			throw new IllegalArgumentException("The operator cannot be null!");
 
-		operator = operator.trim();
 		if (operator.isEmpty())
 			throw new IllegalArgumentException("The variable operator cannot be empty!");
 
+		// Look through characters.
 		char[] chrs = operator.toCharArray();
 		for (int i = 0; i < chrs.length; i++) {
-			char f = chrs[i];
-			if ((f >= '0' && f <= '9') || f == '.')
-				throw new IllegalArgumentException("The operator contain a numeric character!");
+			char c = chrs[i];
+			if ((c >= '0' && c <= '9') || c == '.')
+				throw new IllegalArgumentException("The operator cannot contain numeric characters!");
 
-			if (Character.isWhitespace(f))
-				throw new IllegalArgumentException("The operator may not contain whitespace!");
+			if (c == '_')
+				throw new IllegalArgumentException("The operator cannot contain underscores!");
+
+			if (Character.isAlphabetic(c))
+				throw new IllegalArgumentException("The operator cannot contain alphabetic characters!");
+
+			if (Character.isWhitespace(c))
+				throw new IllegalArgumentException("The operator cannot contain whitespace!");
 		}
 	}
 
@@ -456,15 +485,29 @@ public class ExpressionEnvironment {
 	protected void validateFunction(String name) {
 		// Validate
 		if (name == null)
-			throw new IllegalArgumentException("The variable name cannot be null!");
+			throw new IllegalArgumentException("The function name cannot be null!");
 
-		name = name.trim();
 		if (name.isEmpty())
-			throw new IllegalArgumentException("The variable name cannot be empty!");
+			throw new IllegalArgumentException("The function name cannot be empty!");
 
+		// Validate not starting with number or special character.
 		char f = name.charAt(0);
 		if ((f >= '0' && f <= '9') || f == '.')
-			throw new IllegalArgumentException("The function name may not start with a numeric character!");
+			throw new IllegalArgumentException("The function name cannot start with a numeric character!");
+
+		// Look through characters.
+		char[] chrs = name.toCharArray();
+		for (int i = 0; i < chrs.length; i++) {
+			char c = chrs[i];
+
+			if ((c >= '0' && c <= '9') || c == '.' || c == '_')
+				continue;
+
+			if (Character.isAlphabetic(c))
+				continue;
+
+			throw new IllegalArgumentException("The function name must be alphanumeric!");
+		}
 	}
 
 }

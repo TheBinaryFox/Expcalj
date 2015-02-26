@@ -78,6 +78,9 @@ public class ExpressionEnvironmentClone extends ExpressionEnvironment {
 
 	@Override
 	public void setVariable(String name, IVariable value) {
+		if (name != null)
+			name = name.trim();
+
 		validateVariable(name);
 
 		// Set
@@ -135,6 +138,9 @@ public class ExpressionEnvironmentClone extends ExpressionEnvironment {
 
 	@Override
 	public void setOperation(String operator, IOperation operation) {
+		if (operator != null)
+			operator = operator.trim();
+
 		validateOperator(operator);
 
 		// Set
@@ -191,6 +197,9 @@ public class ExpressionEnvironmentClone extends ExpressionEnvironment {
 
 	@Override
 	public void setFunction(String name, IFunction function) {
+		if (name != null)
+			name = name.trim();
+
 		validateFunction(name);
 
 		// Set

@@ -142,7 +142,7 @@ public class Expression {
 	 *            the expected first step in the chain.
 	 * @param env
 	 *            the expression environment.
-	 *            
+	 * 
 	 * @return the evaluated chain.
 	 */
 	protected BigDecimal evaluateSteps(ExpressionStep first, ExpressionEnvironment env) {
@@ -322,8 +322,18 @@ public class Expression {
 
 			ignore_whitespace = false;
 
+			// Check if negative.
+			if (c == '-') {
+				if (sb.length() == 0) {
+					sb.append(c);
+					continue;
+				} else {
+					// TODO
+				}
+			}
+
 			// Check if valid value symbol.
-			if ((c >= '0' && c <= '9') || c == '.' || c == '(' || c == ')' || Character.isAlphabetic(c)) {
+			if (isValueSymbol(c)) {
 				sb.append(c);
 			} else {
 				break;
@@ -366,7 +376,7 @@ public class Expression {
 			ignore_whitespace = false;
 
 			// Check if valid value symbol.
-			if ((c >= '0' && c <= '9') || c == '.' || c == '(' || c == ')' || Character.isAlphabetic(c)) {
+			if (isValueSymbol(c)) {
 				break;
 			} else {
 				if (Character.isWhitespace(c)) {
@@ -374,8 +384,12 @@ public class Expression {
 					continue;
 				}
 
-				if (ignoring_end_ws)
+				if (ignoring_end_ws) {
+					if (c == '-')
+						break;
+
 					throw new ExpressionException("Invalid whitespace inside operator.");
+				}
 
 				sb.append(c);
 			}
@@ -493,11 +507,20 @@ public class Expression {
 		}
 
 		// Just variable.
-		IVariable var = env.getVariable(variable);
-		if (var == null)
-			throw new ExpressionException("Undefined variable \"" + variable + "\".");
+		if (variable.charAt(0) == '-') {
+			variable = variable.substring(1);
+			IVariable var = env.getVariable(variable);
+			if (var == null)
+				throw new ExpressionException("Undefined variable \"" + variable + "\".");
 
-		return var.value();
+			return var.value().negate();
+		} else {
+			IVariable var = env.getVariable(variable);
+			if (var == null)
+				throw new ExpressionException("Undefined variable \"" + variable + "\".");
+
+			return var.value();
+		}
 	}
 
 	/**
@@ -631,6 +654,10 @@ public class Expression {
 		if (last < chrs.length) {
 			params.add(new Expression(paramstr.substring(last), env).calculate());
 		}
+	}
+
+	protected boolean isValueSymbol(char c) {
+		return (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '(' || c == ')' || Character.isAlphabetic(c);
 	}
 
 }

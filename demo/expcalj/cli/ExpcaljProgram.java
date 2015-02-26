@@ -981,7 +981,7 @@ public class ExpcaljProgram {
 			if (i == 0 && ((namechr >= '0' && namechr <= '9') || namechr == '.'))
 				throw new ExpcaljException("define: variable/function name cannot start with a number.");
 
-			if (!Character.isAlphabetic(namechr) && !((namechr >= '0' && namechr <= '9') || namechr == '.'))
+			if (namechr != '_' && !Character.isAlphabetic(namechr) && !((namechr >= '0' && namechr <= '9') || namechr == '.'))
 				throw new ExpcaljException("define: variable/function name must be alpha numeric.");
 		}
 
