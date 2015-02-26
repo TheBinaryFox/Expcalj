@@ -179,7 +179,7 @@ public class STDINReader {
 		if (bufused == buffer.length) {
 			bufferCapacity(buffer.length * 2);
 		}
-		
+
 		// Append
 		if (pointer == bufused) {
 			buffer[pointer] = c;
@@ -267,7 +267,7 @@ public class STDINReader {
 					if (history_pointer == -1) {
 						history_bufused = bufused;
 					}
-					
+
 					history_pointer++;
 					drawClear();
 					buffer = history[history_pointer].toCharArray();

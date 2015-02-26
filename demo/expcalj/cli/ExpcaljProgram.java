@@ -45,7 +45,7 @@ public class ExpcaljProgram {
 	static private boolean running;
 	static private boolean ansi;
 	static private boolean nnl;
-	
+
 	static private STDINReader reader;
 
 	static private String color(String code) {
@@ -177,7 +177,7 @@ public class ExpcaljProgram {
 				System.out.print("\033[31m[Exit]\033[0m\n\n");
 				System.exit(0);
 			}
-			
+
 		});
 		String line = null;
 
@@ -191,7 +191,7 @@ public class ExpcaljProgram {
 			} catch (Exception ex) {
 				if (bsodmode)
 					bsod(ex);
-				
+
 				drawErrorLine(ex);
 				if (!(ex instanceof ExpcaljException))
 					lasterror = ex;
@@ -358,7 +358,7 @@ public class ExpcaljProgram {
 			handleCommand(line.substring(1));
 			return;
 		}
-		
+
 		if (Pattern.matches(".*(?<=[0-9A-Za-z ])=(?=[0-9A-Za-z ]).*", line)) {
 			handleCommand("define " + line);
 			return;

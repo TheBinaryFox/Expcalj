@@ -10,14 +10,24 @@ import java.util.LinkedList;
  */
 public class Expression {
 
+	/**
+	 * A container for the result of the seek methods.
+	 * 
+	 * @author The Binary Fox
+	 */
 	static protected class ParseSeek {
 		String string;
 		int end;
 	}
 
+	/**
+	 * A simple operation that just returns a value.
+	 * 
+	 * @author The Binary Fox
+	 */
 	static protected class OpReturn implements IOperation {
 
-		static private OpReturn instance = new OpReturn();;
+		static private OpReturn instance = new OpReturn();
 
 		static public OpReturn instance() {
 			return instance;
@@ -644,7 +654,7 @@ public class Expression {
 			if (depth > 0)
 				continue;
 
-			// Next param
+			// Next parameter.
 			if (c == ',') {
 				params.add(new Expression(paramstr.substring(last, i), env).calculate());
 				last = i + 1;
@@ -656,6 +666,13 @@ public class Expression {
 		}
 	}
 
+	/**
+	 * Check to see if the character is a valid character for values.
+	 * 
+	 * @param c
+	 *            the character to check.
+	 * @return true if the character is a valid character for values.
+	 */
 	protected boolean isValueSymbol(char c) {
 		return (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '(' || c == ')' || Character.isAlphabetic(c);
 	}
