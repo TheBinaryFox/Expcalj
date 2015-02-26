@@ -122,13 +122,13 @@ public class ExpressionEnvironment {
 	}
 
 	// Calculator
-	private HashMap<String, IOperation> operations;
-	private HashMap<String, IVariable> variables;
-	private HashMap<String, IFunction> functions;
-	private MathContext context;
+	protected HashMap<String, IOperation> operations;
+	protected HashMap<String, IVariable> variables;
+	protected HashMap<String, IFunction> functions;
+	protected MathContext context;
 
-	private boolean opt_mulv = false;
-	private boolean opt_mulb = false;
+	protected boolean opt_mulv = false;
+	protected boolean opt_mulb = false;
 
 	/**
 	 * Create a new calculator environment.
@@ -228,20 +228,7 @@ public class ExpressionEnvironment {
 	 *            the value of the variable.
 	 */
 	public void setVariable(String name, IVariable value) {
-		if (name == null)
-			throw new IllegalArgumentException("The variable name cannot be null!");
-
-		name = name.trim();
-		if (name.isEmpty())
-			throw new IllegalArgumentException("The variable name cannot be empty!");
-
-		// Validate not starting with number or special character.
-		char f = name.charAt(0);
-		if ((f >= '0' && f <= '9') || f == '.')
-			throw new IllegalArgumentException("The variable name may not start with a numeric character!");
-
-		if (name.contains("(") || name.contains(")"))
-			throw new IllegalArgumentException("The variable name may not contain \"(\" or \")\"");
+		validateVariable(name);
 
 		// Set
 		if (value == null)
@@ -303,22 +290,7 @@ public class ExpressionEnvironment {
 	 *            the operation.
 	 */
 	public void setOperation(String operator, IOperation operation) {
-		if (operator == null)
-			throw new IllegalArgumentException("The operator cannot be null!");
-
-		operator = operator.trim();
-		if (operator.isEmpty())
-			throw new IllegalArgumentException("The variable operator cannot be empty!");
-
-		char[] chrs = operator.toCharArray();
-		for (int i = 0; i < chrs.length; i++) {
-			char f = chrs[i];
-			if ((f >= '0' && f <= '9') || f == '.')
-				throw new IllegalArgumentException("The operator contain a numeric character!");
-
-			if (Character.isWhitespace(f))
-				throw new IllegalArgumentException("The operator may not contain whitespace!");
-		}
+		validateOperator(operator);
 
 		// Set
 		if (operation == null)
@@ -334,7 +306,7 @@ public class ExpressionEnvironment {
 	 *            the name of the function.
 	 * @return true if the function is declared.
 	 */
-	public boolean hasFunctionn(String name) {
+	public boolean hasFunction(String name) {
 		return functions.containsKey(name);
 	}
 
@@ -367,17 +339,7 @@ public class ExpressionEnvironment {
 	 *            the function object.
 	 */
 	public void setFunction(String name, IFunction function) {
-		// Validate
-		if (name == null)
-			throw new IllegalArgumentException("The variable name cannot be null!");
-
-		name = name.trim();
-		if (name.isEmpty())
-			throw new IllegalArgumentException("The variable name cannot be empty!");
-
-		char f = name.charAt(0);
-		if ((f >= '0' && f <= '9') || f == '.')
-			throw new IllegalArgumentException("The function name may not start with a numeric character!");
+		validateFunction(name);
 
 		// Set
 		if (function == null)
@@ -409,12 +371,13 @@ public class ExpressionEnvironment {
 	}
 
 	/**
-	 * Copy the environment.
+	 * Do a deep clone of the environment, including the operation, function,
+	 * and variable maps.
 	 * 
-	 * @return the environment that was copied.
+	 * @return the cloned environment.
 	 */
 	@SuppressWarnings("unchecked")
-	public ExpressionEnvironment copy() {
+	public ExpressionEnvironment copyDeep() {
 		ExpressionEnvironment env = new ExpressionEnvironment();
 		env.opt_mulb = opt_mulb;
 		env.opt_mulv = opt_mulv;
@@ -424,6 +387,84 @@ public class ExpressionEnvironment {
 		env.variables = (HashMap<String, IVariable>) variables.clone();
 
 		return env;
+	}
+
+	/**
+	 * Do a shallow "clone" of the environment. This creates a new object that
+	 * reads the values from this environment.
+	 * 
+	 * @return the cloned environment.
+	 */
+	public ExpressionEnvironment copy() {
+		return new ExpressionEnvironmentClone(this);
+	}
+
+	/**
+	 * Validate a variable name.
+	 * 
+	 * @param name
+	 *            the name of the variable.
+	 */
+	protected void validateVariable(String name) {
+		if (name == null)
+			throw new IllegalArgumentException("The variable name cannot be null!");
+
+		name = name.trim();
+		if (name.isEmpty())
+			throw new IllegalArgumentException("The variable name cannot be empty!");
+
+		// Validate not starting with number or special character.
+		char f = name.charAt(0);
+		if ((f >= '0' && f <= '9') || f == '.')
+			throw new IllegalArgumentException("The variable name may not start with a numeric character!");
+
+		if (name.contains("(") || name.contains(")"))
+			throw new IllegalArgumentException("The variable name may not contain \"(\" or \")\"");
+	}
+
+	/**
+	 * Validate the format of an operator.
+	 * 
+	 * @param operator
+	 *            the operator.
+	 */
+	protected void validateOperator(String operator) {
+		if (operator == null)
+			throw new IllegalArgumentException("The operator cannot be null!");
+
+		operator = operator.trim();
+		if (operator.isEmpty())
+			throw new IllegalArgumentException("The variable operator cannot be empty!");
+
+		char[] chrs = operator.toCharArray();
+		for (int i = 0; i < chrs.length; i++) {
+			char f = chrs[i];
+			if ((f >= '0' && f <= '9') || f == '.')
+				throw new IllegalArgumentException("The operator contain a numeric character!");
+
+			if (Character.isWhitespace(f))
+				throw new IllegalArgumentException("The operator may not contain whitespace!");
+		}
+	}
+
+	/**
+	 * Validate a function name.
+	 * 
+	 * @param name
+	 *            the name of the function.
+	 */
+	protected void validateFunction(String name) {
+		// Validate
+		if (name == null)
+			throw new IllegalArgumentException("The variable name cannot be null!");
+
+		name = name.trim();
+		if (name.isEmpty())
+			throw new IllegalArgumentException("The variable name cannot be empty!");
+
+		char f = name.charAt(0);
+		if ((f >= '0' && f <= '9') || f == '.')
+			throw new IllegalArgumentException("The function name may not start with a numeric character!");
 	}
 
 }

@@ -1,7 +1,6 @@
 package com.thebinaryfox.expcalj;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.LinkedList;
 
 /**
@@ -290,7 +289,7 @@ public class Expression {
 	 */
 	protected ParseSeek seekValue(char[] arr, int start) {
 		ParseSeek seek = new ParseSeek();
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		boolean ignore_whitespace = true;
 		int depth = 0;
@@ -353,7 +352,7 @@ public class Expression {
 	 */
 	protected ParseSeek seekOperator(char[] arr, int start) {
 		ParseSeek seek = new ParseSeek();
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		boolean ignore_whitespace = true;
 		boolean ignoring_end_ws = false;
@@ -489,7 +488,7 @@ public class Expression {
 				BigDecimal by = new BigDecimal(variable.substring(0, i));
 				BigDecimal mul = parseVariable(variable.substring(i));
 
-				return mul.multiply(by, MathContext.DECIMAL128);
+				return mul.multiply(by, env.getMathContext());
 			}
 		}
 
@@ -544,7 +543,7 @@ public class Expression {
 			if (dfn) {
 				BigDecimal mul = new BigDecimal(functionname);
 				BigDecimal by = new Expression(paramstr, env).calculate();
-				return mul.multiply(by, MathContext.DECIMAL128);
+				return mul.multiply(by, env.getMathContext());
 			}
 		}
 
