@@ -49,6 +49,66 @@ compile_do() {
 }
 
 #
+# Arguments
+COMPRESSION="-5"
+COMPILE=()
+BUILD_CLI=1
+INCLUDE_BDM=1
+
+for arg in "$@"
+do
+	case "$arg" in
+	"-x:bigdecimalmath")
+		INCLUDE_BDM=0
+		;;
+
+	"-x:bdm")
+		INCLUDE_BDM=0
+		;;
+	
+	"--no-cli")
+		BUILD_CLI=0
+		;;
+
+	"--lib")
+		BUILD_CLI=0
+		;;
+
+	"-l")
+		BUILD_CLI=0
+		;;
+
+	"-c:off")
+		COMPRESSION="-0"
+		;;
+
+	"--compression:off")
+		COMPRESSION="-0"
+		;;
+
+	"-c:max")
+		COMPRESSION="-9"
+		;;
+
+	"--compression:max")
+		COMPRESSION="-9"
+		;;
+
+	esac
+done
+
+COMPILE=("../src")
+if [ $INCLUDE_BDM -eq 1 ]; then
+	COMPILE=("${COMPILE[@]}" "../src-bigdecimalmath")
+fi
+
+if [ $BUILD_CLI -eq 1 ]; then
+	COMPILE=("${COMPILE[@]}" "../demo")
+fi
+
+
+
+#
 # Prepare for building.
 printf "\033[33mPreparing...\033[0m\n"
 if [ -f "expcalj.jar" ]; then
@@ -60,8 +120,9 @@ fi
 mkdir tmp-bin
 mkdir tmp-log
 printf "\033[33mCompiling...\033[0m\n"
-compile "../src" "../src-bigdecimalmath" "../demo"
+compile "${COMPILE[@]}"
 
+if [ $BUILD_CLI -eq 1 ]; then
 #
 # Write META-INF.
 mkdir tmp-bin/META-INF
@@ -69,12 +130,13 @@ cat << END > "tmp-bin/META-INF/MANIFEST.MF"
 Manifest-Version: 1.0
 Main-Class: expcalj.cli.ExpcaljProgram
 END
+fi
 
 #
 # Compress into archive.
 printf "\033[33mCompressing...\033[0m\n"
 cd tmp-bin
-zip --quiet -r "../expcalj.jar" *
+zip --quiet "$COMPRESSION" -r "../expcalj.jar" *
 cd ../
 
 #
